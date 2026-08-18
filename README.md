@@ -124,5 +124,5 @@ docker/entrypoint.sh # 起動時に migrate（+任意でseed_data）を自動実
 - DBは開発用に SQLite を使用しています（`skilltrail/settings.py` の `DATABASES` を変更すれば
   PostgreSQL / MySQL 等にも切り替え可能です）。
 - カテゴリ削除時、紐づく学習目標がある場合は `on_delete=models.PROTECT` により削除できないようにしています
-  （DB設計書「10. 削除時の考慮」に準拠）。
+  （DB設計書「11. 削除時の考慮」に準拠）。
 - 学習目標を削除すると、紐づくロードマップ・タスク・振り返りも CASCADE で削除されます。
