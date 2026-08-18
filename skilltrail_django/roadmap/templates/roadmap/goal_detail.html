@@ -1,0 +1,138 @@
+{% extends "roadmap/base.html" %}
+{% load roadmap_extras %}
+{% block title %}{{ goal.title }} | SkillTrail{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <a class="back-link" href="{% url 'roadmap:goal_list' %}">← 学習目標一覧へ戻る</a>
+    <div class="eyebrow">{{ goal.category.name }}</div>
+    <h1 class="h1">{{ goal.title }}</h1>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <a class="btn btn-ghost" href="{% url 'roadmap:goal_update' goal.pk %}">編集</a>
+    <a class="btn btn-danger" href="{% url 'roadmap:goal_delete' goal.pk %}">削除</a>
+  </div>
+</div>
+
+<div class="content">
+  <div class="card" style="padding:20px; margin-bottom:26px; display:flex; gap:24px; flex-wrap:wrap;">
+    <div style="flex:2 1 260px;">
+      <div class="stat-label">目的</div>
+      <div style="font-size:14px; line-height:1.6; margin-bottom:14px;">{{ goal.purpose|default:"―"|linebreaksbr }}</div>
+      <div class="stat-label">メモ</div>
+      <div style="font-size:13.5px; line-height:1.6;" class="muted">{{ goal.memo|default:"―"|linebreaksbr }}</div>
+    </div>
+    <div style="flex:1 1 180px;">
+      <div style="margin-bottom:12px;">
+        <span class="badge {{ goal.status|status_badge }}"><span class="badge-dot"></span>{{ goal.get_status_display }}</span>
+      </div>
+      <div class="mono" style="font-size:12.5px; margin-bottom:6px;">開始日 {{ goal.start_date|date:"Y/m/d"|default:"―" }}</div>
+      <div class="mono" style="font-size:12.5px; margin-bottom:14px;">目標期限 {{ goal.target_date|date:"Y/m/d"|default:"―" }}</div>
+      <div class="mono" style="font-size:12.5px;">学習時間合計 {{ goal.total_study_minutes|minutes_display }}</div>
+    </div>
+    <div style="flex:1 1 180px;">
+      <div class="stat-label">進捗率</div>
+      <div class="mono" style="font-size:34px; font-weight:700; margin-bottom:8px;">{{ goal.progress_rate }}%</div>
+      <div class="gauge-track"><div class="gauge-fill" style="width: {{ goal.progress_rate }}%"></div></div>
+      <div style="font-size:11.5px; margin-top:8px;" class="muted">完了 {{ goal.completed_task_count }} / 全 {{ goal.total_task_count }} タスク</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">ロードマップ</div>
+      <a class="btn btn-ghost btn-sm" href="{% url 'roadmap:roadmap_create' goal.pk %}">＋ ステップ追加</a>
+    </div>
+
+    {% if roadmaps %}
+    <div class="trail">
+      {% for r in roadmaps %}
+      <div class="waypoint">
+        <div class="waypoint-marker {{ r.status }}">
+          {% if r.status == 'completed' %}✓{% else %}{{ forloop.counter }}{% endif %}
+        </div>
+        <div class="waypoint-card">
+          <div class="waypoint-head">
+            <div>
+              <div class="waypoint-title">{{ r.title }}</div>
+              <div class="waypoint-desc">{{ r.description|default:"―" }}</div>
+              <span class="badge {{ r.status|status_badge }}"><span class="badge-dot"></span>{{ r.get_status_display }}</span>
+            </div>
+            <div class="waypoint-actions">
+              <form method="post" action="{% url 'roadmap:roadmap_move' r.pk 'up' %}">{% csrf_token %}<button class="icon-btn sm" type="submit" title="上へ">↑</button></form>
+              <form method="post" action="{% url 'roadmap:roadmap_move' r.pk 'down' %}">{% csrf_token %}<button class="icon-btn sm" type="submit" title="下へ">↓</button></form>
+              <a class="icon-btn sm" href="{% url 'roadmap:roadmap_update' r.pk %}" title="編集">✎</a>
+              <a class="icon-btn sm" href="{% url 'roadmap:roadmap_delete' r.pk %}" title="削除">🗑</a>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="subhead">
+            <span class="subhead-label">関連タスク（{{ r.tasks.all|length }}）</span>
+            <a class="section-link" href="{% url 'roadmap:task_create' %}?roadmap={{ r.pk }}&next={{ goal.get_absolute_url }}">＋ タスク追加</a>
+          </div>
+
+          {% if r.tasks.all %}
+          {% for t in r.tasks.all %}
+          <div class="task-mini">
+            <form method="post" action="{% url 'roadmap:task_complete' t.pk %}?next={{ goal.get_absolute_url }}">
+              {% csrf_token %}
+              <button class="check-btn {% if t.status == 'completed' %}done{% endif %}" type="submit" {% if t.status == 'completed' %}disabled{% endif %} title="完了にする">
+                {% if t.status == 'completed' %}✓{% endif %}
+              </button>
+            </form>
+            <span class="task-mini-title {% if t.status == 'completed' %}done{% endif %}">{{ t.title }}</span>
+            <span class="badge {{ t.priority|priority_badge }}"><span class="badge-dot"></span>{{ t.get_priority_display }}</span>
+            {% if t.due_date %}<span class="mono muted" style="font-size:11px;">{{ t.due_date|date:"Y/m/d" }}</span>{% endif %}
+            {% if t.material_url %}<a href="{{ t.material_url }}" target="_blank" rel="noreferrer" style="color:var(--route);">🔗</a>{% endif %}
+            <a class="icon-btn sm" href="{% url 'roadmap:task_update' t.pk %}?next={{ goal.get_absolute_url }}" title="編集">✎</a>
+            <a class="icon-btn sm" href="{% url 'roadmap:task_delete' t.pk %}?next={{ goal.get_absolute_url }}" title="削除">🗑</a>
+          </div>
+          {% endfor %}
+          {% else %}
+          <div class="muted" style="font-size:12px;">タスクはまだありません。</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+      <div class="serif">ロードマップがまだありません</div>
+      <div>学習ステップを追加して道のりを描きましょう。</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="section" style="margin-bottom:0;">
+    <div class="section-head">
+      <div class="section-title">振り返り</div>
+      <a class="btn btn-ghost btn-sm" href="{% url 'roadmap:reflection_create' %}?goal={{ goal.pk }}&next={{ goal.get_absolute_url }}">＋ 振り返り追加</a>
+    </div>
+    {% if reflections %}
+    {% for f in reflections %}
+    <div class="card reflection-card">
+      <div class="reflection-head">
+        <div class="reflection-meta">
+          <span class="mono" style="font-size:12px; font-weight:700;">{{ f.study_date|date:"Y/m/d" }}</span>
+          <span class="badge badge-route"><span class="badge-dot"></span>{{ f.study_time|minutes_display }}</span>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <a class="icon-btn sm" href="{% url 'roadmap:reflection_update' f.pk %}?next={{ goal.get_absolute_url }}" title="編集">✎</a>
+          <a class="icon-btn sm" href="{% url 'roadmap:reflection_delete' f.pk %}?next={{ goal.get_absolute_url }}" title="削除">🗑</a>
+        </div>
+      </div>
+      <div class="reflection-body"><b>学んだこと：</b>{{ f.learned }}</div>
+      {% if f.problem %}<div class="reflection-body muted"><b>詰まったこと：</b>{{ f.problem }}</div>{% endif %}
+      {% if f.next_action %}<div class="reflection-body muted"><b>次にやること：</b>{{ f.next_action }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty">
+      <div class="serif">振り返りがまだありません</div>
+      <div>学んだことを記録しましょう。</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "roadmap/base.html" %}
+{% block title %}{% if is_edit %}タスクを編集{% else %}タスクを登録{% endif %} | SkillTrail{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <a class="back-link" href="{% if next %}{{ next }}{% else %}{% url 'roadmap:task_list' %}{% endif %}">← 戻る</a>
+    <h1 class="h1">{% if is_edit %}タスクを編集{% else %}タスクを登録{% endif %}</h1>
+  </div>
+</div>
+<div class="content">
+  <div class="card form-card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+
+      <div class="field-row">
+        <div class="field">
+          <label>学習目標<span class="req">*</span></label>
+          {{ form.goal }}
+          {% for e in form.goal.errors %}<div class="err">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <label>ロードマップ<span class="req">*</span></label>
+          {{ form.roadmap }}
+          {% for e in form.roadmap.errors %}<div class="err">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>タスク名<span class="req">*</span></label>
+        {{ form.title }}
+        {% for e in form.title.errors %}<div class="err">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="field">
+        <label>教材URL</label>
+        {{ form.material_url }}
+        {% for e in form.material_url.errors %}<div class="err">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>優先度<span class="req">*</span></label>
+          {{ form.priority }}
+        </div>
+        <div class="field">
+          <label>期限</label>
+          {{ form.due_date }}
+        </div>
+        <div class="field">
+          <label>ステータス<span class="req">*</span></label>
+          {{ form.status }}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>メモ</label>
+        {{ form.memo }}
+      </div>
+
+      <div class="form-foot">
+        <a class="btn btn-ghost" href="{% if next %}{{ next }}{% else %}{% url 'roadmap:task_list' %}{% endif %}">キャンセル</a>
+        <button class="btn btn-primary" type="submit">{% if is_edit %}更新する{% else %}登録する{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // 学習目標の選択に応じてロードマップの候補を絞り込む（data-goal属性で判定）
+  (function () {
+    var goalSelect = document.getElementById("id_goal");
+    var roadmapSelect = document.getElementById("id_roadmap");
+    if (!goalSelect || !roadmapSelect) return;
+
+    var options = Array.prototype.slice.call(roadmapSelect.options);
+
+    function applyFilter() {
+      var goalId = goalSelect.value;
+      var currentValue = roadmapSelect.value;
+      var firstVisible = null;
+      options.forEach(function (opt) {
+        if (!opt.value) { opt.hidden = false; return; }
+        var match = opt.getAttribute("data-goal") === goalId;
+        opt.hidden = !match;
+        if (match && firstVisible === null) firstVisible = opt.value;
+      });
+      var selectedStillValid = options.some(function (opt) {
+        return opt.value === currentValue && !opt.hidden;
+      });
+      if (!selectedStillValid) {
+        roadmapSelect.value = firstVisible || "";
+      }
+    }
+
+    goalSelect.addEventListener("change", applyFilter);
+    applyFilter();
+  })();
+</script>
+{% endblock %}

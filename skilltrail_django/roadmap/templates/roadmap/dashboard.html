@@ -1,0 +1,98 @@
+{% extends "roadmap/base.html" %}
+{% load roadmap_extras %}
+{% block title %}ダッシュボード | SkillTrail{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Basecamp</div>
+    <h1 class="h1">ダッシュボード</h1>
+  </div>
+  <a class="btn btn-primary" href="{% url 'roadmap:goal_create' %}">＋ 新規目標登録</a>
+</div>
+
+<div class="content">
+  <div class="stat-grid">
+    <div class="card stat-card">
+      <div class="stat-label">学習中の目標</div>
+      <div class="stat-value">{{ in_progress_count }}<span class="unit">件</span></div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">完了済み目標</div>
+      <div class="stat-value">{{ completed_count }}<span class="unit">件</span></div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">未完了タスク</div>
+      <div class="stat-value">{{ incomplete_tasks }}<span class="unit">件</span></div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-label">今月の学習時間</div>
+      <div class="stat-value">{{ month_minutes|minutes_display }}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">学習目標ごとの進捗</div>
+      <a class="section-link" href="{% url 'roadmap:goal_list' %}">すべて見る →</a>
+    </div>
+    <div class="card">
+      {% for goal in active_goals %}
+      <a class="row row-link" href="{{ goal.get_absolute_url }}">
+        <div class="row-main">
+          <div class="row-top">
+            <span class="row-title">{{ goal.title }}</span>
+            <span class="badge {{ goal.status|status_badge }}"><span class="badge-dot"></span>{{ goal.get_status_display }}</span>
+          </div>
+          <div class="gauge-track"><div class="gauge-fill" style="width: {{ goal.progress_rate }}%"></div></div>
+        </div>
+        <div class="row-pct mono">{{ goal.progress_rate }}%</div>
+      </a>
+      {% empty %}
+      <div class="empty-inline">進行中の学習目標はありません。</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="section">
+      <div class="section-head"><div class="section-title">期限が近いタスク</div></div>
+      <div class="card">
+        {% for task in upcoming_tasks %}
+        <div class="row">
+          <div class="row-main">
+            <div class="row-title" style="font-size:13.5px;">{{ task.title }}</div>
+            <div class="row-sub">{{ task.roadmap.learning_goal.title }}</div>
+          </div>
+          <span class="badge {{ task.priority|priority_badge }}"><span class="badge-dot"></span>{{ task.get_priority_display }}</span>
+          <span class="row-due mono">{{ task.due_date|date:"Y/m/d" }}</span>
+        </div>
+        {% empty %}
+        <div class="empty-inline">直近の期限タスクはありません。</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div class="section-title">最近の振り返り</div>
+        <a class="section-link" href="{% url 'roadmap:reflection_create' %}">＋ 登録</a>
+      </div>
+      <div class="card">
+        {% for r in recent_reflections %}
+        <div class="row" style="align-items:flex-start;">
+          <div class="row-main">
+            <div class="row-top">
+              <span class="mono muted" style="font-size:11.5px;">{{ r.study_date|date:"Y/m/d" }}</span>
+              <span class="row-title-sm">{{ r.learning_goal.title }}</span>
+            </div>
+            <div class="row-text">{{ r.learned }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="empty-inline">振り返りはまだありません。</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

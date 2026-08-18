@@ -1,0 +1,26 @@
+{% extends "roadmap/base.html" %}
+{% block title %}{{ type_label }}を削除 | SkillTrail{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 class="h1">{{ type_label }}を削除</h1>
+  </div>
+</div>
+<div class="content">
+  <div class="card confirm-box">
+    <div class="confirm-text">
+      「<b>{{ object }}</b>」を削除します。
+      {% if warning %}{{ warning }}{% endif %}
+      この操作は取り消せません。
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <div class="form-foot" style="justify-content:flex-start;">
+        <a class="btn btn-ghost" href="{{ cancel_url }}">キャンセル</a>
+        <button class="btn btn-danger-solid" type="submit">削除する</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

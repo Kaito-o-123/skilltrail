@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SkillTrail{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'roadmap/style.css' %}">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">🧭 <span class="serif">SkillTrail</span></div>
+        <div class="brand-sub">Learning Roadmap</div>
+      </div>
+      <nav class="nav">
+        <a class="nav-item {% if active == 'dashboard' %}active{% endif %}" href="{% url 'roadmap:dashboard' %}">
+          <span>ダッシュボード</span>
+        </a>
+        <a class="nav-item {% if active == 'goals' %}active{% endif %}" href="{% url 'roadmap:goal_list' %}">
+          <span>学習目標</span>
+        </a>
+        <a class="nav-item {% if active == 'tasks' %}active{% endif %}" href="{% url 'roadmap:task_list' %}">
+          <span>タスク</span>
+        </a>
+        <a class="nav-item {% if active == 'reflections' %}active{% endif %}" href="{% url 'roadmap:reflection_list' %}">
+          <span>振り返り</span>
+        </a>
+      </nav>
+      <div class="legend">
+        <div class="legend-title">Map Legend・状態</div>
+        <div class="legend-row"><span class="dot ink"></span>未着手</div>
+        <div class="legend-row"><span class="dot gold"></span>進行中 / 学習中</div>
+        <div class="legend-row"><span class="dot moss"></span>完了</div>
+        <div class="legend-row"><span class="dot danger"></span>中断 / 優先度高</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

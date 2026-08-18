@@ -1,0 +1,51 @@
+{% extends "roadmap/base.html" %}
+{% load roadmap_extras %}
+{% block title %}振り返り | SkillTrail{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Journal</div>
+    <h1 class="h1">振り返り</h1>
+  </div>
+  <a class="btn btn-primary" href="{% url 'roadmap:reflection_create' %}?next={% url 'roadmap:reflection_list' %}">＋ 新規登録</a>
+</div>
+
+<div class="content">
+  <form class="filterbar" method="get">
+    <select class="input" name="goal">
+      <option value="">すべての学習目標</option>
+      {% for g in goals %}
+      <option value="{{ g.id }}" {% if filters.goal == g.id|stringformat:"s" %}selected{% endif %}>{{ g.title }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-ghost" type="submit">絞り込む</button>
+    <a class="btn btn-ghost" href="{% url 'roadmap:reflection_list' %}">条件クリア</a>
+  </form>
+
+  {% if reflections %}
+  {% for f in reflections %}
+  <div class="card reflection-card">
+    <div class="reflection-head">
+      <div class="reflection-meta">
+        <span class="mono" style="font-size:12.5px; font-weight:700;">{{ f.study_date|date:"Y/m/d" }}</span>
+        <span class="badge badge-route"><span class="badge-dot"></span>{{ f.learning_goal.title }}</span>
+        <span class="badge badge-ink"><span class="badge-dot"></span>{{ f.study_time|minutes_display }}</span>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <a class="icon-btn" href="{% url 'roadmap:reflection_update' f.pk %}?next={% url 'roadmap:reflection_list' %}" title="編集">✎</a>
+        <a class="icon-btn" href="{% url 'roadmap:reflection_delete' f.pk %}?next={% url 'roadmap:reflection_list' %}" title="削除">🗑</a>
+      </div>
+    </div>
+    <div class="reflection-body"><b>学んだこと：</b>{{ f.learned }}</div>
+    {% if f.problem %}<div class="reflection-body muted"><b>詰まったこと：</b>{{ f.problem }}</div>{% endif %}
+    {% if f.next_action %}<div class="reflection-body muted"><b>次にやること：</b>{{ f.next_action }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty">
+    <div class="serif">振り返りが見つかりません</div>
+    <div>学習した内容を記録してみましょう。</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "roadmap/base.html" %}
+{% block title %}{% if is_edit %}学習目標を編集{% else %}学習目標を登録{% endif %} | SkillTrail{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <a class="back-link" href="{% if is_edit %}{{ goal.get_absolute_url }}{% else %}{% url 'roadmap:goal_list' %}{% endif %}">← 戻る</a>
+    <h1 class="h1">{% if is_edit %}学習目標を編集{% else %}学習目標を登録{% endif %}</h1>
+  </div>
+</div>
+<div class="content">
+  <div class="card form-card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="field">
+        <label>タイトル<span class="req">*</span></label>
+        {{ form.title }}
+        {% for e in form.title.errors %}<div class="err">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>カテゴリ<span class="req">*</span></label>
+          {{ form.category }}
+          {% for e in form.category.errors %}<div class="err">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <label>ステータス<span class="req">*</span></label>
+          {{ form.status }}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>目的</label>
+        {{ form.purpose }}
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>開始日</label>
+          {{ form.start_date }}
+        </div>
+        <div class="field">
+          <label>目標期限</label>
+          {{ form.target_date }}
+          {% for e in form.target_date.errors %}<div class="err">{{ e }}</div>{% endfor %}
+        </div>
+      </div>
+
+      <div class="field">
+        <label>メモ</label>
+        {{ form.memo }}
+      </div>
+
+      <div class="form-foot">
+        <a class="btn btn-ghost" href="{% if is_edit %}{{ goal.get_absolute_url }}{% else %}{% url 'roadmap:goal_list' %}{% endif %}">キャンセル</a>
+        <button class="btn btn-primary" type="submit">{% if is_edit %}更新する{% else %}登録する{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

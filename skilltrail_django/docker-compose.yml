@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    container_name: skilltrail_web
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - SEED_DATA=true       # 初回起動時にサンプルデータを投入する（不要なら false に）
+      - DEBUG=1
+    stdin_open: true
+    tty: true

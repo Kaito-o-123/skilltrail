@@ -1,0 +1,76 @@
+{% extends "roadmap/base.html" %}
+{% load roadmap_extras %}
+{% block title %}タスク | SkillTrail{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Waypoints</div>
+    <h1 class="h1">タスク</h1>
+  </div>
+  <a class="btn btn-primary" href="{% url 'roadmap:task_create' %}?next={% url 'roadmap:task_list' %}">＋ 新規登録</a>
+</div>
+
+<div class="content">
+  <form class="filterbar" method="get">
+    <div class="search">
+      <input class="input" type="text" name="kw" value="{{ filters.kw }}" placeholder="タスク名・メモで検索">
+    </div>
+    <select class="input" name="goal">
+      <option value="">すべての学習目標</option>
+      {% for g in goals %}
+      <option value="{{ g.id }}" {% if filters.goal == g.id|stringformat:"s" %}selected{% endif %}>{{ g.title }}</option>
+      {% endfor %}
+    </select>
+    <select class="input" name="status">
+      <option value="">すべてのステータス</option>
+      {% for value, label in status_choices %}
+      <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select class="input" name="priority">
+      <option value="">すべての優先度</option>
+      {% for value, label in priority_choices %}
+      <option value="{{ value }}" {% if filters.priority == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-ghost" type="submit">絞り込む</button>
+    <a class="btn btn-ghost" href="{% url 'roadmap:task_list' %}">条件クリア</a>
+  </form>
+
+  {% if tasks %}
+  <div class="card">
+    {% for t in tasks %}
+    <div class="row">
+      <form method="post" action="{% url 'roadmap:task_complete' t.pk %}?next={% url 'roadmap:task_list' %}">
+        {% csrf_token %}
+        <button class="check-btn {% if t.status == 'completed' %}done{% endif %}" type="submit" {% if t.status == 'completed' %}disabled{% endif %} title="完了にする">
+          {% if t.status == 'completed' %}✓{% endif %}
+        </button>
+      </form>
+      <div class="row-main">
+        <div class="row-title {% if t.status == 'completed' %}task-mini-title done{% endif %}" style="font-size:13.5px;">{{ t.title }}</div>
+        <div class="row-sub">{{ t.roadmap.learning_goal.title }} ・ {{ t.roadmap.title }}</div>
+      </div>
+      <span class="badge {{ t.status|status_badge }}"><span class="badge-dot"></span>{{ t.get_status_display }}</span>
+      <span class="badge {{ t.priority|priority_badge }}"><span class="badge-dot"></span>{{ t.get_priority_display }}</span>
+      {% if t.due_date %}
+      <span class="row-due mono" style="{% if t.is_overdue %}color:var(--danger);{% endif %}">{{ t.due_date|date:"Y/m/d" }}</span>
+      {% else %}
+      <span class="row-due mono muted">―</span>
+      {% endif %}
+      {% if t.material_url %}<a href="{{ t.material_url }}" target="_blank" rel="noreferrer" style="color:var(--route);">🔗</a>{% endif %}
+      <div class="row-actions">
+        <a class="icon-btn" href="{% url 'roadmap:task_update' t.pk %}?next={% url 'roadmap:task_list' %}" title="編集">✎</a>
+        <a class="icon-btn" href="{% url 'roadmap:task_delete' t.pk %}?next={% url 'roadmap:task_list' %}" title="削除">🗑</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <div class="serif">タスクが見つかりません</div>
+    <div>条件を変更するか、新しいタスクを登録してください。</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

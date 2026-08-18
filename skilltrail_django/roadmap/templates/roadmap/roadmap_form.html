@@ -1,0 +1,45 @@
+{% extends "roadmap/base.html" %}
+{% block title %}{% if is_edit %}ロードマップを編集{% else %}ロードマップステップを追加{% endif %} | SkillTrail{% endblock %}
+{% block content %}
+<div class="topbar">
+  <div>
+    <a class="back-link" href="{{ goal.get_absolute_url }}">← {{ goal.title }} へ戻る</a>
+    <h1 class="h1">{% if is_edit %}ロードマップを編集{% else %}ロードマップステップを追加{% endif %}</h1>
+  </div>
+</div>
+<div class="content">
+  <div class="card form-card">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="field">
+        <label>ステップ名<span class="req">*</span></label>
+        {{ form.title }}
+        {% for e in form.title.errors %}<div class="err">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="field">
+        <label>説明</label>
+        {{ form.description }}
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>並び順<span class="req">*</span></label>
+          {{ form.sort_order }}
+          {% for e in form.sort_order.errors %}<div class="err">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="field">
+          <label>ステータス<span class="req">*</span></label>
+          {{ form.status }}
+        </div>
+      </div>
+
+      <div class="form-foot">
+        <a class="btn btn-ghost" href="{{ goal.get_absolute_url }}">キャンセル</a>
+        <button class="btn btn-primary" type="submit">{% if is_edit %}更新する{% else %}登録する{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
